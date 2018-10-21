@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Алгоритм Свена, метода золотого сечения и метода Фибоначчи</title>
+	<script src="libs/math.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML.js"></script>
+    <script src="scripts/code.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="scripts/style.css">
+</head>
+<body>
+	<h1>Алгоритм Свена, метода золотого сечения и метода Фибоначчи</h1>
+	<table>
+		
+		<tr>
+			<th>f(x)=</th>
+			<td>
+				<input type="text" name="functionInput" id="expr" value="0.05*x^3+5*x^2-10"/>
+				<br>
+				Начиная из точки(
+				<input type="text" class="miniInput" id="zeroX" value="0" />)
+				<br>
+			  	Точность ξ=<input type="text" id="accuracy" value="1e-8">
+			  	<br>
+			  	Шаг t=<input type="text" id="step" value="0.1">
+		    </td>
+		</tr>
+		<tr>
+			<th>Ваша функция</th>
+			<td>
+				<div id="function">$$$$</div>
+			</td>
+		</tr>
+		<tr>
+			<th>Шаг 1</th>
+			<td>
+				<p>Интервал неопределённости</p>
+				<div id="intervalInput"></div>
+
+			</td>
+		</tr>
+		<tr>
+			<th>Шаг 2</th>
+			<td>
+				<p>Экстремумы по методу золотого сечения</p>
+				X<sub>min</sub> = <div id="xMinInput"></div>
+				X<sub>max</sub> = <div id="xMaxInput"></div>
+			</td>
+		</tr>
+		<tr>
+			<th>Шаг 3</th>
+			<td>
+				<p>Экстремум по методу чисел Фибоначчи</p>
+				X<sub>min/max</sub> = <div id="xExtremumFiboInput"></div>
+			</td>
+		</tr>
+
+	</table>
+</body>
+</html>
