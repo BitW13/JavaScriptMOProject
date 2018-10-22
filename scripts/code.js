@@ -1,49 +1,53 @@
 let expr=document.getElementById('expr'),
 	xZero=document.getElementById('zeroX'),
 	stepInput=document.getElementById('step'),
+	accuracy = document.getElementById('accuracy'),
 	yourFunction=document.getElementById('function'),
     intervalInput=document.getElementById('intervalInput'),
-	parenthesis='keep';
+    xMinInput = document.getElementById('xMinInput'),
+    xMaxInput=document.getElementById('xMaxInput'),
+    xExtremumFiboInput = document.getElementById('xExtremumFiboInput'),
+	parenthesis='keep',
+	implicit ='hide';
 
+doBeginning(expr.value, xZero.value, stepInput.value, accuracy.value);
 
-doBeginning(expr.value, xZero.value, stepInput.value);
-
-function doBeginning(expression, x0, step){
+function doBeginning(expression, x0, step, accuracy){
 	expr.value=expression;
 	xZero.value=x0;
 	stepInput.value=step;
-	variables = getVariables();
-    console.log(variables);
-    
-	interval=getInterval(expression, x0, step);
-    intervalInput.innerHTML="["+interval[0]+", "+interval[1]+"]";
+	accuracy.value = accuracy;
 
+    setFunction(yourFunction, expr.value);
+    
+	var interval = setInterval(expression, x0, step);
+
+    setExtremums(expression, interval[0], interval[1], accuracy);
 }
+
 function setFunction(element, value){
-	//alert('$$'+math.parse(value).toTex({parenthesis: parenthesis})+'$$');
 	element.innerHTML = '$$' + math.parse(value).toTex({parenthesis: parenthesis}) + '$$';
 }
-function getVariables() {
-    var nodeExpr = math.parse(expr.value);
-    console.log(nodeExpr.toString());
-    var filtered = nodeExpr.filter(function (node) {
-        return node.isSymbolNode
-    });
-    filtered = unique(filtered);
-    return filtered;
-}
-function unique(arr) {
-    var obj = {};
 
-    for (var i = 0; i < arr.length; i++) {
-        var str = arr[i];
-        obj[str] = true; // запомнить строку в виде свойства объекта
-    }
-
-    return Object.keys(obj); // или собрать ключи перебором для IE8-
+function setInterval(expression, x0, step) {
+    interval=getInterval(expression, x0, step);
+    intervalInput.innerHTML="["+interval[0]+", "+interval[1]+"]";
+    return interval;
 }
+
+function setExtremums(expression, interval1, interval2, accuracy) {
+    var xMin = getGoldenRatioMin(expression,interval1,interval2,accuracy);
+    xMinInput.innerHTML=xMin;
+
+    var xMax = getGoldenRatioMax(expression,interval1,interval2,accuracy);
+    xMaxInput.innerHTML=xMax;
+
+    xMin = getFibonacciExtremum(expression,interval1,interval2,accuracy);
+    xExtremumFiboInput.innerHTML = xMin;
+}
+
 function getInterval(expression, x0, step){
-	node=math.parse(expression);
+    node=math.parse(expression);
     code=node.compile();
     f1=code.eval({x:x0-step});
     f2=code.eval({x:x0});
@@ -101,3 +105,151 @@ function getInterval(expression, x0, step){
         
     }
 }
+
+function getGoldenRatioMin(expression, interval1, interval2, accuracy) {
+	var eps = accuracy;
+	node=math.parse(expression);
+    code=node.compile();
+    var a= interval1;
+    var b= interval2;
+	var q = (3-Math.sqrt(5))/2;
+	var x1 = a+q*(b-a);
+	var x2 = b-q*(b-a);
+	var A = code.eval({x:x1});
+	var B = code.eval({x:x2});
+	while(b-a>eps){
+		if(A<B){
+			b = x2;
+			x2 = x1;
+			B = A;
+			x1 = a+(1-q)*(b-a);
+			A = code.eval({x:x1});
+		}else{
+			a = x1;
+			x1 = x2; 
+			A = B; 
+			x2 = b-(1-q)*(b-a); 
+			B = code.eval({x:x2}); 
+		}
+	}
+	var x = (a+b)/2;
+	x = Math.abs(x)<accuracy ? 0:x;
+	return x;
+}
+
+function getGoldenRatioMax(expression, interval1, interval2, accuracy) {
+	var eps = accuracy;
+	node=math.parse(expression);
+    code=node.compile();
+    var a= interval1;
+    var b= interval2;
+	var q = (3-Math.sqrt(5))/2;
+	var x1 = a+q*(b-a);
+	var x2 = b-q*(b-a);
+	var A = code.eval({x:x1});
+	var B = code.eval({x:x2});
+	while(b-a>eps){
+		if(A>B){
+			b = x2;
+			x2 = x1;
+			B = A;
+			x1 = a+(1-q)*(b-a);
+			A = code.eval({x:x1});
+		}else{
+			a = x1;
+			x1 = x2; 
+			A = B; 
+			x2 = b-(1-q)*(b-a); 
+			B = code.eval({x:x2}); 
+		}
+	}
+	var x = (a+b)/2;
+	x = Math.abs(x)<accuracy ? 0:x;
+	return x;
+}
+
+function F(n) {
+    var f; 
+    var f1 = 1;
+    var f2 = 1;
+    var m = 0;
+    while(m < n - 1)
+    {
+        f = f1 + f2;
+        f1 = f2;
+        f2 = f;
+        ++m;
+    }
+    return f1;
+}
+
+function getFibonacciExtremum(expression, interval1, interval2, accuracy) {
+    var eps = accuracy;
+    node=math.parse(expression);
+    code=node.compile();
+    var xf1 = 1;
+    var xf2 = 1;
+    var N = 0;
+    var iteration = 0;
+    var fn1 = 1;
+    var fn2 = 1;
+    var fn;
+    var f = (interval2 - interval1)/accuracy;
+    while(fn1 < f){
+        fn = fn1 + fn2;
+        fn1 = fn2;
+        fn2 = fn;
+        ++N;
+    }
+    var x1 = interval1 + F(N - 2) / F(N) * (interval2 - interval1) - (N%2 == 0 ? -1 : 1) * accuracy / F(N);
+    var x2 = interval1 + F(N - 1) / F(N) * (interval2 - interval1) + (N%2 == 0 ? -1 : 1) * accuracy / F(N);
+    xf1 = code.eval({x:x1});
+    xf2 = code.eval({x:x2});
+    while(math.abs(interval2 - interval1) <= accuracy){
+        iteration++;
+        if(xf1 >= xf2){
+            interval1 = x1;
+            x1 = x2;
+            xf1 = xf2;
+            x2 = interval1 + F(N - iteration - 1) / F(N - iteration) * (interval2 - interval1) + ((N - iteration)%2 == 0 ? -1 : 1) * accuracy / F(N - iteration);
+            xf2 = code.eval({x:x2}); 
+        }
+        else{
+            interval2 = x2;
+            x2 = x1;
+            xf2 = xf1;
+            x1 = interval1 + F(N - iteration - 2) / F(N - iteration) * (interval2 - interval1) - ((N - iteration)%2 == 0 ? -1 : 1) * accuracy / F(N - iteration);
+            xf1 = code.eval({x:x1});
+        }
+    }
+    var x = (x1+x2)/2;
+    return x;
+}
+
+expr.oninput = function () {
+    let node = null;
+
+    try {
+        // parse the expression
+        node = math.parse(expr.value);
+
+        // evaluate the result of the expression
+        //result.innerHTML = math.format(node.compile().eval());
+    }
+    catch (err) {
+        //result.innerHTML = '<span style="color: red;">' + err.toString() + '</span>';
+        console.log('<span style="color: red;">' + err.toString() + '</span>');
+    }
+
+    try {
+        // export the expression to LaTeX
+        let latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
+        console.log('LaTeX expression:', latex);
+
+        // display and re-render the expression
+        let elem = MathJax.Hub.getAllJax('function')[0];
+        MathJax.Hub.Queue(['Text', elem, latex]);
+    }
+    catch (err) {
+    }
+};
