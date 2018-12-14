@@ -25,14 +25,25 @@ function doBeginning(expression, x0, step, accuracy){
     setExtremums(expression, interval[0], interval[1], accuracy);
 }
 
-function setFunction(element, value){
+function restart() {
+    doBeginning(expr.value, xZero.value, stepInput.value, accuracy.value);
+}
+
+function setFunction(element, value) {
 	element.innerHTML = '$$' + math.parse(value).toTex({parenthesis: parenthesis}) + '$$';
 }
 
 function setInterval(expression, x0, step) {
     interval=getInterval(expression, x0, step);
-    intervalInput.innerHTML="["+interval[0]+", "+interval[1]+"]";
+    if(interval == ["none", "none"]){
+        document.getElementById("resultFunc").innerHTML = "Минимум не найден";
+        return null;
+    }
+    else{
+        intervalInput.innerHTML="["+interval[0]+", "+interval[1]+"]";
+        document.getElementById("resultFunc").innerHTML = "Минимум найден";
     return interval;
+    }    
 }
 
 function setExtremums(expression, interval1, interval2, accuracy) {
